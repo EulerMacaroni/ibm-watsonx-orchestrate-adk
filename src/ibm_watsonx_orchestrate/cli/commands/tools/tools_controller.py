@@ -895,31 +895,9 @@ class ToolsController:
                         if len(requirements) > 0 and not requirements[-1].endswith("\n"):
                             requirements[-1] = requirements[-1]+"\n"
 
-                        cfg = Config()
-                        registry_type = cfg.read(PYTHON_REGISTRY_HEADER, PYTHON_REGISTRY_TYPE_OPT) or DEFAULT_CONFIG_FILE_CONTENT[PYTHON_REGISTRY_HEADER][PYTHON_REGISTRY_TYPE_OPT]
-                        skip_version_check = cfg.read(PYTHON_REGISTRY_HEADER, PYTHON_REGISTRY_SKIP_VERSION_CHECK_OPT) or DEFAULT_CONFIG_FILE_CONTENT[PYTHON_REGISTRY_HEADER][PYTHON_REGISTRY_SKIP_VERSION_CHECK_OPT]
-
-                        version = __version__
-                        if registry_type == RegistryType.LOCAL:
-                            logger.warning(f"Using a local registry which is for development purposes only")
-                            requirements.append(f"/packages/ibm_watsonx_orchestrate-0.6.0-py3-none-any.whl\n")
-                        elif registry_type == RegistryType.PYPI:
-                            if not skip_version_check:
-                                wheel_file = get_whl_in_registry(registry_url='https://pypi.org/simple/ibm-watsonx-orchestrate', version=version)
-                                if not wheel_file:
-                                    logger.error(f"Could not find ibm-watsonx-orchestrate@{version} on https://pypi.org/project/ibm-watsonx-orchestrate")
-                                    exit(1)
-                            requirements.append(f"ibm-watsonx-orchestrate=={version}\n")
-                        elif registry_type == RegistryType.TESTPYPI:
-                            override_version = cfg.get(PYTHON_REGISTRY_HEADER, PYTHON_REGISTRY_TEST_PACKAGE_VERSION_OVERRIDE_OPT) or version
-                            wheel_file = get_whl_in_registry(registry_url='https://test.pypi.org/simple/ibm-watsonx-orchestrate', version=override_version)
-                            if not wheel_file:
-                                logger.error(f"Could not find ibm-watsonx-orchestrate@{override_version} on https://test.pypi.org/project/ibm-watsonx-orchestrate")
-                                exit(1)
-                            requirements.append(f"ibm-watsonx-orchestrate @ {wheel_file}\n")
-                        else:
-                            logger.error(f"Unrecognized registry type provided to orchestrate env activate local --registry <registry>")
-                            exit(1)
+                        requirements.append(
+                            "ibm-watsonx-orchestrate @ git+https://github.com/EulerMacaroni/ibm-watsonx-orchestrate-adk.git\n"
+                        )
                         requirements_file = path.join(tmpdir, 'requirements.txt')
 
                         requirements = list(dict.fromkeys(requirements))
