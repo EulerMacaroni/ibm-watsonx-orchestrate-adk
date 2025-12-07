@@ -329,9 +329,9 @@ def tool(
     # inspiration: https://github.com/pydantic/pydantic/blob/main/pydantic/validate_call_decorator.py
     agent_run_param = None
 
-    if input_schema and input_schema.type == 'object':
-        for k,v in input_schema.properties:
-            if v.get('title','') == 'AgentRun':
+    if input_schema and input_schema.type == 'object' and input_schema.properties:
+        for k, v in input_schema.properties.items():
+            if (getattr(v, "title", "") or "") == 'AgentRun':
                 if agent_run_param:
                     raise BadRequest(f"Tool {name} has multiple run context objects")
                 del input_schema.properties[k]
