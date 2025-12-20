@@ -896,7 +896,7 @@ class ToolsController:
                             requirements[-1] = requirements[-1]+"\n"
 
                         requirements.append(
-                            "ibm-watsonx-orchestrate @ git+https://github.com/EulerMacaroni/ibm-watsonx-orchestrate-adk.git\n"
+                            "ibm-watsonx-orchestrate @ git+https://github.com/EulerMacaroni/ibm-watsonx-orchestrate-adk.git@main\n"
                         )
                         requirements_file = path.join(tmpdir, 'requirements.txt')
 

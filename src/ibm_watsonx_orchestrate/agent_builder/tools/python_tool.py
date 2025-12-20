@@ -79,8 +79,15 @@ class PythonTool(BaseTool):
         run_context_param = self.get_run_param()
         if run_context_param:
             context_param_value = kwargs.get(run_context_param)
-            if context_param_value:
-                kwargs[run_context_param] = _create_immutable_struct(context_param_value)
+            if context_param_value is not None:
+                try:
+                    from ibm_watsonx_orchestrate.run import AgentRun
+                    if not isinstance(context_param_value, AgentRun):
+                        context_param_value = AgentRun.model_validate(context_param_value)
+                except Exception:
+                    context_param_value = _create_immutable_struct(context_param_value)
+                kwargs[run_context_param] = context_param_value
+            
             
         return self.fn(*args, **kwargs)
     
@@ -336,6 +343,22 @@ def tool(
                 if agent_run_param:
                     raise BadRequest(f"Tool {name} has multiple run context objects")
                 agent_run_param = k
+
+
+                # Align custom schemas with the default AgentRun shape so the runtime doesn't strip context.
+                try:
+                    from ibm_watsonx_orchestrate.run import AgentRun
+                    agent_run_schema = JsonSchemaObject(**AgentRun.model_json_schema())
+                    if v.type is None:
+                        v.type = agent_run_schema.type
+                    if v.properties is None:
+                        v.properties = agent_run_schema.properties or {}
+                    else:
+                        if agent_run_schema.properties:
+                            for prop_name, prop_schema in agent_run_schema.properties.items():
+                                v.properties.setdefault(prop_name, prop_schema)
+                except Exception:
+                    logger.debug("Unable to normalize AgentRun schema; leaving as-is.")
 
     def _tool_decorator(fn):
 
