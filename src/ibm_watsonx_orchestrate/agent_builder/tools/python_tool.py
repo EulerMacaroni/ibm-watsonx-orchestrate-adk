@@ -330,11 +330,11 @@ def tool(
     agent_run_param = None
 
     if input_schema and input_schema.type == 'object' and input_schema.properties:
-        for k, v in input_schema.properties.items():
+        for k, v in list(input_schema.properties.items()):
+            # AgentRun detection is only relevant for tools that include the run context
             if (getattr(v, "title", "") or "") == 'AgentRun':
                 if agent_run_param:
                     raise BadRequest(f"Tool {name} has multiple run context objects")
-                del input_schema.properties[k]
                 agent_run_param = k
 
     def _tool_decorator(fn):
